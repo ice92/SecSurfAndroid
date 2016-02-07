@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Secsurf</string>
+    <string name="action_settings">Settings</string>
+    <string name="dir_location">Directory :</string>
+    <string name="change_dir">Select directory</string>
+
+</resources>
