@@ -77,7 +77,8 @@
         android:id="@+id/button2"
         android:layout_below="@+id/txt_dir_location"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:onClick="delClick"/>
 
     <Button
         android:background="@xml/buttonc"
