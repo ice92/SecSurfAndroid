@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.ftunram.secsurf.core.pornFiltering;
 import com.ftunram.secsurf.core.svmPornFiltering;
 import com.ftunram.secsurf.toolkit.Asset2file;
+import com.ftunram.secsurf.toolkit.FileEditor;
 import com.ftunram.secsurf.toolkit.FileRWan;
 import com.ftunram.secsurf.toolkit.ImageCounter;
 import com.ls.directoryselector.DirectoryDialog;
@@ -134,6 +135,7 @@ public class MainActivity extends ListActivity implements DirectoryDialog.Listen
 		txtDirLocation = (TextView) findViewById(R.id.txt_dir_location);
 		Button btnChangeDir = (Button) findViewById(R.id.btn_change_dir);
 		btnChangeDir.setOnClickListener(clickListener);
+		scanres=new ArrayList<>();
 	}
 
 	ImageCounter ic=new ImageCounter();
@@ -142,23 +144,32 @@ public class MainActivity extends ListActivity implements DirectoryDialog.Listen
 
     public void clrClick(View v){
         adapter.clear();
-		new pornFiltering().scan2("blabla",this);
-		Log.i("test make dir", "sukses");
-    }
+		new pornFiltering().scan2("blabla", this);
 
+		scanres.clear();
+    }
+	public void delClick(View v){
+
+		for(int i=0;i<scanres.size();i++)
+		if(scanres.get(i)){
+			boolean test=FileEditor.delete(settings.getStorePath()+"/"+files.get(i));
+			Log.i("test make dir", "" + settings.getStorePath()+"/"+files.get(i));
+		}
+	}
+	ArrayList<Boolean> scanres;
+	ArrayList<String> files;
 	public void scanClick(View v) {
 
         FileRWan write=new FileRWan();
 		Intent xx=new Intent(this, LoadingScreenActivity.class);
 		startActivity(xx);
-		ArrayList<String> files=ic.getNumFiles(settings.getStorePath());
+		files=ic.getNumFiles(settings.getStorePath());
 		Button del=(Button)findViewById(R.id.button2);
 		del.setEnabled(true);
 		Button clr=(Button)findViewById(R.id.button3);
 		clr.setEnabled(true);
         File x=new File(settings.getStorePath()+"/protected.ini");
         try{
-
             x.createNewFile();
             Log.i("test make dir","sukses");
         }catch (Exception e){
@@ -171,9 +182,14 @@ public class MainActivity extends ListActivity implements DirectoryDialog.Listen
 			Log.i("test make dir",settings.getStorePath()+"/"+files.get(i));
 			temp=myEngine.matchSVM(settings.getStorePath()+"/"+files.get(i),null);//scanner.scan(settings.getStorePath()+"/"+files.get(i));
 			if(temp)
+			{
 				listItems.add(files.get(i) + "\nResult : " + "Negative Content!");
-			else
+				scanres.add(true);
+			}
+			else{
 				listItems.add(files.get(i) + "\nResult : " + "Good Content");
+				scanres.add(false);
+			}
             out+=""+temp;
 		}
         Log.i("isi ini", out);
