@@ -23,4 +23,5 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':libraries:opencv')
     compile project(':lib')
+    compile 'com.android.support:support-v4:21.0.3'
 }
