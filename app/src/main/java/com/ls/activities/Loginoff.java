@@ -6,202 +6,178 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.ftunram.secsurf.toolkit.DatabaseHelper;
-import com.ls.activities.R;
+import com.ls.directoryselectordemo.R;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class Loginoff extends Activity {
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
     private static final boolean AUTO_HIDE = true;
-
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
     private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
     private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mHideHandler = new Handler();
+    DatabaseHelper helper;
     private View mContentView;
-    private final Runnable mHidePart2Runnable = new Runnable() {
-        @SuppressLint("InlinedApi")
-        @Override
-        public void run() {
-            // Delayed removal of status and navigation bar
-
-            // Note that some of these constants are new as of API 16 (Jelly Bean)
-            // and API 19 (KitKat). It is safe to use them, as they are inlined
-            // at compile-time and do nothing on earlier devices.
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
-    };
     private View mControlsView;
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
+    private final OnTouchListener mDelayHideTouchListener;
+    private final Handler mHideHandler;
+    private final Runnable mHidePart2Runnable;
+    private final Runnable mHideRunnable;
+    private final Runnable mShowPart2Runnable;
+    private boolean mVisible;
+
+    /* renamed from: com.ls.activities.Loginoff.1 */
+    class C00901 implements Runnable {
+        C00901() {
+        }
+
+        @SuppressLint({"InlinedApi"})
         public void run() {
-            // Delayed display of UI elements
-            ActionBar actionBar = getActionBar();
+            Loginoff.this.mContentView.setSystemUiVisibility(4871);
+        }
+    }
+
+    /* renamed from: com.ls.activities.Loginoff.2 */
+    class C00912 implements Runnable {
+        C00912() {
+        }
+
+        public void run() {
+            ActionBar actionBar = Loginoff.this.getActionBar();
             if (actionBar != null) {
                 actionBar.show();
             }
-            mControlsView.setVisibility(View.VISIBLE);
+            Loginoff.this.mControlsView.setVisibility(0);
         }
-    };
-    private boolean mVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_loginoff);
-
-        mVisible = true;
-        mControlsView = findViewById(R.id.fullscreen_content_controls);
-        mContentView = findViewById(R.id.fullscreen_content);
-
-
-        // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-        findViewById(R.id.button7).setOnTouchListener(mDelayHideTouchListener);
     }
 
-    @Override
+    /* renamed from: com.ls.activities.Loginoff.3 */
+    class C00923 implements Runnable {
+        C00923() {
+        }
+
+        public void run() {
+            Loginoff.this.hide();
+        }
+    }
+
+    /* renamed from: com.ls.activities.Loginoff.4 */
+    class C00934 implements OnTouchListener {
+        C00934() {
+        }
+
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            Loginoff.this.delayedHide(Loginoff.AUTO_HIDE_DELAY_MILLIS);
+            return false;
+        }
+    }
+
+    /* renamed from: com.ls.activities.Loginoff.5 */
+    class C00945 implements OnClickListener {
+        C00945() {
+        }
+
+        public void onClick(View view) {
+            Loginoff.this.toggle();
+        }
+    }
+
+    public Loginoff() {
+        this.mHideHandler = new Handler();
+        this.mHidePart2Runnable = new C00901();
+        this.mShowPart2Runnable = new C00912();
+        this.mHideRunnable = new C00923();
+        this.mDelayHideTouchListener = new C00934();
+        this.helper = new DatabaseHelper(this);
+    }
+
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_loginoff);
+        this.mVisible = AUTO_HIDE;
+        this.mControlsView = findViewById(R.id.fullscreen_content_controls);
+        this.mContentView = findViewById(R.id.fullscreen_content);
+        this.mContentView.setOnClickListener(new C00945());
+        findViewById(R.id.button7).setOnTouchListener(this.mDelayHideTouchListener);
+    }
+
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
         delayedHide(100);
     }
 
     private void toggle() {
-        if (mVisible) {
+        if (this.mVisible) {
             hide();
         } else {
-            show();
+            hide();
         }
     }
 
     private void hide() {
-        // Hide UI first
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.hide();
         }
-        mControlsView.setVisibility(View.GONE);
-        mVisible = false;
-
-        // Schedule a runnable to remove the status and navigation bar after a delay
-        mHideHandler.removeCallbacks(mShowPart2Runnable);
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
+        this.mControlsView.setVisibility(8);
+        this.mVisible = false;
+        this.mHideHandler.removeCallbacks(this.mShowPart2Runnable);
+        this.mHideHandler.postDelayed(this.mHidePart2Runnable, 300);
     }
 
-    @SuppressLint("InlinedApi")
+    @SuppressLint({"InlinedApi"})
     private void show() {
-        // Show the system bar
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        mVisible = true;
-
-        // Schedule a runnable to display UI elements after a delay
-        mHideHandler.removeCallbacks(mHidePart2Runnable);
-        mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
+        this.mContentView.setSystemUiVisibility(1536);
+        this.mVisible = AUTO_HIDE;
+        this.mHideHandler.removeCallbacks(this.mHidePart2Runnable);
+        this.mHideHandler.postDelayed(this.mShowPart2Runnable, 300);
     }
 
-    /**
-     * Schedules a call to hide() in [delay] milliseconds, canceling any
-     * previously scheduled calls.
-     */
-    DatabaseHelper helper=new DatabaseHelper(this);
     private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
+        this.mHideHandler.removeCallbacks(this.mHideRunnable);
+        this.mHideHandler.postDelayed(this.mHideRunnable, (long) delayMillis);
     }
-    public void loginClick(View v){
 
-        EditText username=(EditText)findViewById(R.id.userin);
-        EditText password=(EditText)findViewById(R.id.passin);
-        String user=username.getText().toString();
-        String pass=password.getText().toString();
-        String defaut="master";
+    public void loginClick(View v) {
         String passdb;
-        if(checkDataBase("users.db"))
-        {passdb=helper.searchPass(user);}
-        else{
-            passdb=defaut;
+        EditText password = (EditText) findViewById(R.id.passin);
+        String user = ((EditText) findViewById(R.id.userin)).getText().toString();
+        String pass = password.getText().toString();
+        String defaut = "master";
+        if (checkDataBase(DatabaseHelper.DATABASE_NAME)) {
+            passdb = this.helper.searchPass(user);
+        } else {
+            passdb = defaut;
         }
-
-        if(pass.equals(passdb)){
-            Intent intent = new Intent(this, MainActivity.class);
+        if (pass.equals(passdb)) {
+            Intent intent;
+            if (VERSION.SDK_INT >= 19) {
+                intent = new Intent(this, NewMain.class);
+            } else {
+                intent = new Intent(this, MainActivity.class);
+            }
             startActivity(intent);
+            return;
         }
-        else{
-            Toast p=Toast.makeText(this,"Password/Username salah!",Toast.LENGTH_SHORT);
-            p.show();
-        }
+        Toast.makeText(this, "Password/Username salah!", 0).show();
     }
+
     private boolean checkDataBase(String dbname) {
         SQLiteDatabase checkDB = null;
         try {
-            checkDB = SQLiteDatabase.openDatabase(dbname, null,
-                    SQLiteDatabase.OPEN_READONLY);
+            checkDB = SQLiteDatabase.openDatabase(dbname, null, 1);
             checkDB.close();
         } catch (SQLiteException e) {
-            // database doesn't exist yet.
         }
-        return checkDB != null;
+        if (checkDB != null) {
+            return AUTO_HIDE;
+        }
+        return false;
     }
 }
-

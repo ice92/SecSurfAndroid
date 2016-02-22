@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="#0099cc" android:layout_width="-1" android:layout_height="-1">
+    <LinearLayout android:orientation="1" android:layout_width="-1" android:layout_height="-1"
+        <LinearLayout android:orientation="0" android:background="#303030" android:layout_width="-1" android:layout_height="-2">
+            <ImageButton android:layout_gravity="10" android:id="@id/imageButton3" android:background="#00000000" android:layout_width="-2" android:layout_height="-2" android:layout_marginLeft="10sp" android:src="@drawable/menu_01" />
+            <ImageView android:id="@id/fullscreen_content" android:layout_width="-2" android:layout_height="70sp" android:src="@drawable/logo_secsurf_mini" />
+        </LinearLayout>
+        <LinearLayout android:orientation="0" android:background="#a6acb2" android:layout_width="-1" android:layout_height="-2">
+            <ImageButton android:id="@id/imageButton4" android:background="#a6acb2" android:layout_width="-2" android:layout_height="-2" android:layout_marginLeft="10sp" android:layout_marginTop="10sp" android:src="@drawable/scanbt_01" android:onClick="selfol" />
+            <TextView android:textAppearance="?unknown_attr_ref: 1010041" android:textColor="#ffffff" android:layout_gravity="50" android:id="@id/textView4" android:background="@drawable/roundedcorner" android:layout_width="-1" android:layout_height="-2" android:layout_marginLeft="10sp" android:layout_marginRight="20sp" android:text="Directory" android:onClick="selfol" android:elevation="3sp" />
+        </LinearLayout>
+        <LinearLayout android:orientation="1" android:background="#a6acb2" android:layout_width="-1" android:layout_height="-2">
+            <TextView android:id="@id/textView5" android:layout_width="-2" android:layout_height="-2" android:layout_marginLeft="10sp" android:text="SCAN" />
+        </LinearLayout>
+        <LinearLayout android:orientation="0" android:background="#85303030" android:layout_width="-1" android:layout_height="-2">
+            <Button android:enabled="false" android:id="@id/clearbt" android:layout_width="-1" android:layout_height="-2" android:layout_margin="10dp" android:text="Clear" android:layout_weight="1.0" android:onClick="clrClick" style="?attr/metaButtonBarButtonStyle" />
+            <Button android:enabled="false" android:id="@id/deletebt" android:layout_width="-1" android:layout_height="-2" android:layout_margin="10dp" android:text="Delete Negative" android:layout_weight="1.0" android:onClick="delClick" style="?attr/metaButtonBarButtonStyle" />
+        </LinearLayout>
+        <ListView android:id="@id/listView2" android:background="#66adff" android:layout_width="-2" android:layout_height="-2" android:layout_margin="10sp" />
+    </LinearLayout>
+    <FrameLayout android:layout_gravity="50" android:fitsSystemWindows="true" android:layout_width="-1" android:layout_height="-2">
+        <LinearLayout android:layout_gravity="50" android:orientation="0" android:id="@id/fullscreen_content_controls" android:background="@color/black_overlay" android:layout_width="-1" android:layout_height="-2" style="?attr/metaButtonBarStyle">
+            <Button android:id="@id/dummy_button" android:layout_width="0dp" android:layout_height="-2" android:text="Start Service" android:layout_weight="1.0" android:onClick="showNotif" style="?attr/metaButtonBarButtonStyle" />
+            <Button android:id="@id/dummy_button2" android:layout_width="0dp" android:layout_height="-2" android:text="Stop Service" android:layout_weight="1.0" android:onClick="hideNOTIF" style="?attr/metaButtonBarButtonStyle" />
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>

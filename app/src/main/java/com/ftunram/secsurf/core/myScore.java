@@ -1,32 +1,24 @@
 package com.ftunram.secsurf.core;
 
-/**
- * Created by user on 1/12/2016.
- */
-public class myScore implements Comparable<myScore>{
-    public double sc;
+import org.opencv.BuildConfig;
+
+public class myScore implements Comparable<myScore> {
     public String ID;
+    public double sc;
 
     public myScore() {
-        sc=0.0;
-        ID="";
+        this.sc = 0.0d;
+        this.ID = BuildConfig.FLAVOR;
     }
 
-    public int compareTo(myScore two ) {
-        // I migth compare them using the int first
-        // and if they're the same, use the string...
+    public int compareTo(myScore two) {
         double result = this.sc - two.sc;
-        if (result < 0)
-        {
+        if (result < 0.0d) {
             return -1;
         }
-        else if (result == 0)
-        {
+        if (result == 0.0d) {
             return 0;
         }
-        else
-        {
-            return 1;
-        }
+        return 1;
     }
 }

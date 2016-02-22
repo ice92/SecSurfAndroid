@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="1" android:layout_width="-1" android:layout_height="-1"
+    <LinearLayout android:orientation="0" android:layout_width="-1" android:layout_height="-2">
+        <ImageButton android:id="@id/btn_nav_up" android:background="?unknown_attr_ref: 101030e" android:padding="16dp" android:layout_width="-2" android:layout_height="-2" android:src="@drawable/navigation_up" android:contentDescription="@string/up" />
+        <LinearLayout android:layout_gravity="10" android:orientation="1" android:layout_width="0dp" android:layout_height="-2" android:layout_weight="1.0">
+            <TextView android:textStyle="1" android:id="@id/txt_selected_folder_label" android:layout_width="-2" android:layout_height="-2" android:text="@string/selected_folder" />
+            <TextView android:ellipsize="1" android:id="@id/txt_selected_folder" android:layout_width="-2" android:layout_height="-2" android:layout_marginTop="5dp" android:text="test" android:scrollHorizontally="true" android:singleLine="true" />
+        </LinearLayout>
+        <ImageButton android:id="@id/btn_create_folder" android:background="?unknown_attr_ref: 101030e" android:padding="16dp" android:layout_width="-2" android:layout_height="-2" android:src="@drawable/ic_action_create" android:layout_alignParentTop="true" android:layout_alignParentRight="true" android:contentDescription="@string/create_folder" />
+    </LinearLayout>
+    <View android:background="@color/android_bright_blue" android:layout_width="-1" android:layout_height="1dp" />
+    <ListView android:id="@id/list_dirs" android:layout_width="-1" android:layout_height="-1" />
+    <TextView android:textSize="30sp" android:gravity="11" android:id="@id/txt_list_empty" android:padding="10dp" android:visibility="2" android:layout_width="-1" android:layout_height="-1" android:text="@string/empty_list" android:alpha="0.5" />
+</LinearLayout>

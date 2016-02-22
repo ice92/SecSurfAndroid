@@ -5,96 +5,98 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.view.MenuItem;
+import com.ls.directoryselectordemo.R;
 
 public class SettingsActivity extends PreferenceActivity {
 
-	public static void startThisActivity(Context context) {
-		Intent intent = new Intent(context, SettingsActivity.class);
-		context.startActivity(intent);
-	}
+    public static class MyPreferenceFragment extends PreferenceFragment {
+        private AppSettings settings;
+        private final OnSharedPreferenceChangeListener sharedPrefsChangeListener;
 
-	public static void startThisActivityForResult(Activity activity, int requestCode) {
-		Intent intent = new Intent(activity, SettingsActivity.class);
-		activity.startActivityForResult(intent, requestCode);
-	}
+        /* renamed from: com.ls.activities.SettingsActivity.MyPreferenceFragment.1 */
+        class C01041 implements OnPreferenceChangeListener {
+            C01041() {
+            }
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		//addPreferencesFromResource(R.xml.preferences);
-		if (savedInstanceState == null) {
-			getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
-		}
-		initActionBar();
-	}
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                preference.setSummary((String) newValue);
+                return true;
+            }
+        }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == android.R.id.home) {
-			finish();
-			return true;
-		}
+        /* renamed from: com.ls.activities.SettingsActivity.MyPreferenceFragment.2 */
+        class C01052 implements OnSharedPreferenceChangeListener {
+            C01052() {
+            }
 
-		return false;
-	}
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                MyPreferenceFragment.this.settings.load();
+            }
+        }
 
-	public static class MyPreferenceFragment extends PreferenceFragment {
-		private AppSettings settings;
+        public MyPreferenceFragment() {
+            this.sharedPrefsChangeListener = new C01052();
+        }
 
-		@Override
-		public void onCreate(final Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			addPreferencesFromResource(R.xml.preferences);
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.preferences);
+            findPreference("store_path").setOnPreferenceChangeListener(new C01041());
+        }
 
-			Preference storePathPrefs = findPreference("store_path");
-			storePathPrefs.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					preference.setSummary((String) newValue);
-					return true;
-				}
-			});
-		}
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            this.settings = AppSettings.getSettings(getActivity());
+            findPreference("store_path").setSummary(this.settings.getStorePath());
+        }
 
-		@Override
-		public void onActivityCreated(Bundle savedInstanceState) {
-			super.onActivityCreated(savedInstanceState);
-			settings = AppSettings.getSettings(getActivity());
+        public void onPause() {
+            super.onPause();
+            getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this.sharedPrefsChangeListener);
+        }
 
-			Preference storePathPrefs = findPreference("store_path");
-			storePathPrefs.setSummary(settings.getStorePath());
-		}
+        public void onResume() {
+            super.onResume();
+            getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this.sharedPrefsChangeListener);
+        }
+    }
 
-		@Override
-		public void onPause() {
-			super.onPause();
-			getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(sharedPrefsChangeListener);
-		}
+    public static void startThisActivity(Context context) {
+        context.startActivity(new Intent(context, SettingsActivity.class));
+    }
 
-		@Override
-		public void onResume() {
-			super.onResume();
-			getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(sharedPrefsChangeListener);
-		}
+    public static void startThisActivityForResult(Activity activity, int requestCode) {
+        activity.startActivityForResult(new Intent(activity, SettingsActivity.class), requestCode);
+    }
 
-		private final SharedPreferences.OnSharedPreferenceChangeListener sharedPrefsChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-			@Override
-			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-				settings.load();
-			}
-		};
-	}
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState == null) {
+            getFragmentManager().beginTransaction().replace(16908290, new MyPreferenceFragment()).commit();
+        }
+        initActionBar();
+    }
 
-	private void initActionBar() {
-		ActionBar actionBar = getActionBar();
-		if (actionBar != null) {
-			actionBar.setHomeButtonEnabled(true);
-			actionBar.setDisplayHomeAsUpEnabled(true);
-		}
-	}
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() != 16908332) {
+            return false;
+        }
+        finish();
+        return true;
+    }
+
+    private void initActionBar() {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
 }

@@ -1,23 +1,25 @@
 package com.ls.activities;
 
 import android.app.Application;
-
 import java.io.File;
 
 public class MyApplication extends Application {
+    public final AppSettings settings;
 
-	public final AppSettings settings = new AppSettings(this);
+    public MyApplication() {
+        this.settings = new AppSettings(this);
+    }
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-
-		settings.load();
-		if (!settings.isInitialized()) {
-			settings.setInitialized(true);
-			File file = getExternalFilesDir(null);
-			if (file != null) settings.setStorePath(file.getPath());
-			settings.save();
-		}
-	}
+    public void onCreate() {
+        super.onCreate();
+        this.settings.load();
+        if (!this.settings.isInitialized()) {
+            this.settings.setInitialized(true);
+            File file = getExternalFilesDir(null);
+            if (file != null) {
+                this.settings.setStorePath(file.getPath());
+            }
+            this.settings.save();
+        }
+    }
 }

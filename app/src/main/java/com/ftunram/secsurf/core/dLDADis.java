@@ -1,12 +1,6 @@
 package com.ftunram.secsurf.core;
 
 import android.os.Environment;
-
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,169 +11,122 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import org.opencv.BuildConfig;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 
-/**
- * Created by user on 1/12/2016.
- */
 public class dLDADis {
-    private	int nCls, nDT;
-    private Mat U;  //proj Matrix dLDA
-    private	Mat mEC;
-    private	Mat pMuA; //psesudo global mean
-    private Vector<Integer> nEC=new Vector<Integer>();
-    private	Vector<Double> pC=new Vector<Double>();
-    private	Vector<String> ID=new Vector<String>();
-    private	String idObj;
+    private Vector<String> ID;
+    private Mat f0U;
+    private String idObj;
+    private Mat mEC;
+    private int nCls;
+    private int nDT;
+    private Vector<Integer> nEC;
+    private Vector<Double> pC;
+    private Mat pMuA;
+
+    public dLDADis() {
+        this.nEC = new Vector();
+        this.pC = new Vector();
+        this.ID = new Vector();
+    }
 
     public void setParams() {
-        if (nCls==0) {
-
-            nCls=5;
-            nDT=15;
-
-            //Vector NEC
-            for (int i=0; i<nCls; i++)
-                nEC.addElement(3);
-
-            //Vector ID
-            for (int i=0; i<nCls; i++)
-                ID.addElement(new String("T"));
+        if (this.nCls == 0) {
+            int i;
+            this.nCls = 5;
+            this.nDT = 15;
+            for (i = 0; i < this.nCls; i++) {
+                this.nEC.addElement(Integer.valueOf(3));
+            }
+            for (i = 0; i < this.nCls; i++) {
+                this.ID.addElement(new String("T"));
+            }
         }
-        mEC=Mat.eye(3, 3, CvType.CV_64FC1);
-        pMuA=Mat.eye(4, 4,CvType.CV_64FC1);
-
+        this.mEC = Mat.eye(3, 3, CvType.CV_64FC1);
+        this.pMuA = Mat.eye(4, 4, CvType.CV_64FC1);
     }
 
     public void saveParams() {
-        String fName="pornData/"+idObj+"_dLDADis.txt";
+        String fName = "pornData/" + this.idObj + "_dLDADis.txt";
         try {
-            // Assume default encoding.
-            FileWriter fileWriter = new FileWriter(fName);
-
-            // Always wrap FileWriter in BufferedWriter.
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
-            // Note that write() does not automatically
-            // append a newline character.
-            bufferedWriter.write(String.valueOf(nCls));
+            int i;
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fName));
+            bufferedWriter.write(String.valueOf(this.nCls));
             bufferedWriter.newLine();
-            bufferedWriter.write(String.valueOf(nDT));
+            bufferedWriter.write(String.valueOf(this.nDT));
             bufferedWriter.newLine();
-
-            //Vector NEC
-            for (int i=0; i<nEC.size(); i++){
-                bufferedWriter.write(String.valueOf(nEC.elementAt(i)));
+            for (i = 0; i < this.nEC.size(); i++) {
+                bufferedWriter.write(String.valueOf(this.nEC.elementAt(i)));
                 bufferedWriter.newLine();
             }
-
-            //Vector ID
-            for (int i=0; i<ID.size(); i++){
-                bufferedWriter.write(ID.elementAt(i));
+            for (i = 0; i < this.ID.size(); i++) {
+                bufferedWriter.write((String) this.ID.elementAt(i));
                 bufferedWriter.newLine();
             }
-
-            // Always close files.
             bufferedWriter.close();
+        } catch (IOException e) {
+            System.out.println("Error writing to file '" + fName + "'");
         }
-        catch(IOException ex) {
-            System.out.println(
-                    "Error writing to file '"
-                            + fName + "'");
-            // Or we could just do this:
-            // ex.printStackTrace();
-        }
-
-        //Save xmlnya
-        fName="pornData/"+idObj+"_dLDADis.xml";
-        if (mEC!=null) {
-            //Save into xml
-            TaFileStorage fs=new TaFileStorage();
+        fName = "pornData/" + this.idObj + "_dLDADis.xml";
+        if (this.mEC != null) {
+            TaFileStorage fs = new TaFileStorage();
             fs.create(fName);
-            fs.writeMat("mEC", mEC);
-            fs.writeMat("pMuA", pMuA);
+            fs.writeMat("mEC", this.mEC);
+            fs.writeMat("pMuA", this.pMuA);
             fs.release();
         }
-
     }
 
     public void readParams() {
-        String fName="pornData/"+idObj+"_dLDADis.txt";
+        int i;
+        String fName = "pornData/" + this.idObj + "_dLDADis.txt";
         String root = Environment.getExternalStorageDirectory().toString();
         File file = new File(root, fName);
-        // This will reference one line at a time
-        String line = null;
-        nEC.clear();
-        ID.clear();
-
+        this.nEC.clear();
+        this.ID.clear();
         try {
-            // FileReader reads text files in the default encoding.
-            FileReader fileReader = new FileReader(file.getAbsolutePath());
-
-            // Always wrap FileReader in BufferedReader.
-            BufferedReader bufferedReader =  new BufferedReader(fileReader);
-
-            //nCls
-            line = bufferedReader.readLine();
-            nCls=Integer.valueOf(line);
-
-            //nDT
-            line = bufferedReader.readLine();
-            nDT=Integer.valueOf(line);
-
-            // nEC
-            int i=0;
-            while(i<nCls) {
-                line = bufferedReader.readLine();
-                nEC.addElement(Integer.valueOf(line));
-                i++;
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(file.getAbsolutePath()));
+            this.nCls = Integer.valueOf(bufferedReader.readLine()).intValue();
+            this.nDT = Integer.valueOf(bufferedReader.readLine()).intValue();
+            for (i = 0; i < this.nCls; i++) {
+                this.nEC.addElement(Integer.valueOf(bufferedReader.readLine()));
             }
-
-            //ID
-            while((line = bufferedReader.readLine()) != null) {
-                ID.addElement(line);
+            while (true) {
+                String line = bufferedReader.readLine();
+                if (line == null) {
+                    break;
+                }
+                this.ID.addElement(line);
             }
-
-            // Always close files.
             bufferedReader.close();
-        }
-        catch(FileNotFoundException ex) {
+        } catch (FileNotFoundException e) {
             System.out.println("Unable to open file '" + fName + "'");
+        } catch (IOException e2) {
+            System.out.println("Error reading file '" + fName + "'");
         }
-        catch(IOException ex) {
-            System.out.println(
-                    "Error reading file '"
-                            + fName + "'");
-            // Or we could just do this:
-            // ex.printStackTrace();
+        if (this.mEC != null) {
+            this.mEC.release();
+            this.pMuA.release();
         }
-
-        //read xmlnya
-        if (mEC!=null) {
-            mEC.release(); pMuA.release();
-        }
-        fName="pornData/"+idObj+"_dLDADis.xml";
-        File file1 = new File(root, fName);
-        if (nCls>0) {
-            //Save into xml
-            TaFileStorage fs=new TaFileStorage();
+        File file1 = new File(root, "pornData/" + this.idObj + "_dLDADis.xml");
+        if (this.nCls > 0) {
+            TaFileStorage fs = new TaFileStorage();
             fs.open(file1.getAbsolutePath());
-            mEC=fs.readMat("mEC");
-            //System.out.println( "mat mEC= " +mEC.dump() );
-            pMuA=fs.readMat("pMuA");
-            //System.out.println( "mat pMuA= " +pMuA.dump() );
-            //fs.release();
+            this.mEC = fs.readMat("mEC");
+            this.pMuA = fs.readMat("pMuA");
         }
-        for (int i=0;i<nEC.size();i++) {
-            pC.addElement((double)(nEC.elementAt(i))/nDT);
+        for (i = 0; i < this.nEC.size(); i++) {
+            this.pC.addElement(Double.valueOf(((double) ((Integer) this.nEC.elementAt(i)).intValue()) / ((double) this.nDT)));
         }
-
     }
 
-
-
-    public void saveMat2Xml(String fName,Mat dt ) {
-        if (dt.cols()>0) {
-            TaFileStorage fs=new TaFileStorage();
+    public void saveMat2Xml(String fName, Mat dt) {
+        if (dt.cols() > 0) {
+            TaFileStorage fs = new TaFileStorage();
             fs.create(fName);
             fs.writeMat("mat", dt);
             fs.release();
@@ -187,147 +134,118 @@ public class dLDADis {
     }
 
     public Mat readXml2Mat(String fName) {
-        File f = new File(fName);
-        if (f.exists()) {
-            TaFileStorage fs=new TaFileStorage();
-            fs.open(fName);
-            return fs.readMat("mat");
-        } else return null;
+        if (!new File(fName).exists()) {
+            return null;
+        }
+        TaFileStorage fs = new TaFileStorage();
+        fs.open(fName);
+        return fs.readMat("mat");
     }
 
-    public Boolean initial (String ObjName) {
-        Boolean res=false;
-        this.nCls= 0;
-        this.nDT=0;
-        this.idObj=ObjName;
-
-        //load xml
-        String fName="pornData/U_"+idObj+"_dLDA.xml";
+    public Boolean initial(String ObjName) {
+        Boolean res = Boolean.valueOf(false);
+        this.nCls = 0;
+        this.nDT = 0;
+        this.idObj = ObjName;
+        String fName = "pornData/U_" + this.idObj + "_dLDA.xml";
         String root = Environment.getExternalStorageDirectory().toString();
         File file = new File(root, fName);
         if (file.exists()) {
-            //Load U xml
-            U=readXml2Mat(file.getAbsolutePath());
-            //System.out.println( "U  = " + U.dump() );
+            this.f0U = readXml2Mat(file.getAbsolutePath());
         }
         file.delete();
-
-        //load trainned data
-        fName="pornData/"+idObj+"_dLDADis.xml";
-        File f = new File(root,fName);
+        File f = new File(root, "pornData/" + this.idObj + "_dLDADis.xml");
         if (f.exists()) {
-
-            //load2Mat();
             readParams();
-            res=true;
+            res = Boolean.valueOf(true);
         }
         f.delete();
         return res;
     }
 
-    public void free () {
-        if (this.nCls>0) {
-            this.nCls= 0;
-            //mEC
-            if (mEC!=null) mEC.release();
-            if (pMuA!=null) pMuA.release();
-            if (nEC.size()>0) nEC.clear();
-            if (ID.size()>0) ID.clear();
+    public void free() {
+        if (this.nCls > 0) {
+            this.nCls = 0;
+            if (this.mEC != null) {
+                this.mEC.release();
+            }
+            if (this.pMuA != null) {
+                this.pMuA.release();
+            }
+            if (this.nEC.size() > 0) {
+                this.nEC.clear();
+            }
+            if (this.ID.size() > 0) {
+                this.ID.clear();
+            }
         }
-        nDT=0;
-        idObj="";
+        this.nDT = 0;
+        this.idObj = BuildConfig.FLAVOR;
     }
 
     public Mat getSumRows(Mat dtIn) {
-        int M=dtIn.rows();
-        int N=dtIn.cols();
-
-        Mat sumCols= Mat.zeros(M,1,CvType.CV_64FC1);
-        for(int j=0;j<N;j++)
+        int M = dtIn.rows();
+        int N = dtIn.cols();
+        Mat sumCols = Mat.zeros(M, 1, CvType.CV_64FC1);
+        for (int j = 0; j < N; j++) {
             Core.add(sumCols, dtIn.col(j), sumCols);
-        //sumCols=sumCols+dtIn.col(j);
-        return (sumCols);
+        }
+        return sumCols;
     }
 
-    public Mat matTimeScalar(Mat dtIn, double sc)
-    {
-        Mat tmp=new Mat(dtIn.size(), dtIn.type());
-        Scalar alpha = new Scalar(sc);
-        Core.multiply(dtIn, alpha, tmp);
+    public Mat matTimeScalar(Mat dtIn, double sc) {
+        Mat tmp = new Mat(dtIn.size(), dtIn.type());
+        Core.multiply(dtIn, new Scalar(sc), tmp);
         return tmp;
     }
 
     public void addData(Mat dt, String iD) {
-        //String fName;
-        List<Mat> tF=new ArrayList<Mat>();
-        if (this.nCls==0) {
-            nCls++;
-            Mat t=getSumRows(dt);
-            double sc=1.0/dt.cols();
-            mEC=matTimeScalar(t, sc);
-            nEC.addElement(new Integer(dt.cols()));
-            nDT+=dt.cols();
-            pMuA=t.clone(); t.release();
-            ID.addElement(iD);
-            //Projection
-            //System.out.println( "dt : " + dt.dump());
-            Core.gemm(U.t(),dt,1,new Mat(),0,t);
-            //System.out.println( "t : " + t.dump());
-
-            saveMat2Xml("pornData/dtIn/cls_"+idObj+String.valueOf(nCls)+".xml",t);
+        List<Mat> tF = new ArrayList();
+        if (this.nCls == 0) {
+            this.nCls++;
+            Mat t = getSumRows(dt);
+            this.mEC = matTimeScalar(t, 1.0d / ((double) dt.cols()));
+            this.nEC.addElement(new Integer(dt.cols()));
+            this.nDT += dt.cols();
+            this.pMuA = t.clone();
             t.release();
-        } else {
-            nCls++;
-            Mat t=getSumRows(dt);
-
-            //Cambine MEC
-            tF.add(mEC);
-            double sc=1.0/dt.cols();
-            tF.add(matTimeScalar(t, sc));
-            Core.hconcat(tF,mEC);
-
-            nEC.addElement(new Integer(dt.cols()));
-            nDT+=dt.cols();
-            Core.add(pMuA, t.clone(), pMuA);
-            //pMuA+=t.clone(); t.release();
-            ID.addElement(iD);
-            //Projection
-            Core.gemm(U.t(),dt,1,new Mat(),0,t);
-            saveMat2Xml("pornData/dtIn/cls_"+idObj+String.valueOf(nCls)+".xml",t);
+            this.ID.addElement(iD);
+            Core.gemm(this.f0U.m6t(), dt, 1.0d, new Mat(), 0.0d, t);
+            saveMat2Xml("pornData/dtIn/cls_" + this.idObj + String.valueOf(this.nCls) + ".xml", t);
             t.release();
+            return;
         }
+        this.nCls++;
+        t = getSumRows(dt);
+        tF.add(this.mEC);
+        tF.add(matTimeScalar(t, 1.0d / ((double) dt.cols())));
+        Core.hconcat(tF, this.mEC);
+        this.nEC.addElement(new Integer(dt.cols()));
+        this.nDT += dt.cols();
+        Core.add(this.pMuA, t.clone(), this.pMuA);
+        this.ID.addElement(iD);
+        Core.gemm(this.f0U.m6t(), dt, 1.0d, new Mat(), 0.0d, t);
+        saveMat2Xml("pornData/dtIn/cls_" + this.idObj + String.valueOf(this.nCls) + ".xml", t);
+        t.release();
     }
 
-    public  Vector<myScore> Matching( Mat dQry) {
-        Vector<myScore> tSc=new Vector<myScore>();
-        if (nDT>0) {
-            //1. fQ extraction
-            Mat fDQ= new Mat();
-            //Core.multiply(U.t(), dQry, fDQ);
-            Core.gemm(U.t(),dQry,1,new Mat(),0,fDQ);
-            //System.out.println( "fQ = " + fDQ.dump() );
-
-            //2. Match to FDs
-            Mat tmp=Mat.zeros(U.rows(), 1, CvType.CV_64FC1);
-            Mat d=new Mat(fDQ.size(),fDQ.type());
-            myScore tS;
-
+    public Vector<myScore> Matching(Mat dQry) {
+        Vector<myScore> tSc = new Vector();
+        if (this.nDT > 0) {
+            Mat fDQ = new Mat();
+            Core.gemm(this.f0U.m6t(), dQry, 1.0d, new Mat(), 0.0d, fDQ);
+            Mat tmp = Mat.zeros(this.f0U.rows(), 1, CvType.CV_64FC1);
+            Mat d = new Mat(fDQ.size(), fDQ.type());
             String root = Environment.getExternalStorageDirectory().toString();
-            //File file = new File(root);
-            for (int i=0;i<nCls;i++) {
-                double sc=10000 ;
-                //load ldaFeatures
-                String fName="pornData/dtIn/cls_"+idObj+String.valueOf(i+1)+".xml";
-                File file=new File(root,fName);
-                tmp=readXml2Mat(file.getAbsolutePath());
-                //cout << "Omg= " << tmp << endl;
-                for (int j=0;j<tmp.cols();j++) {
-                    //System.out.println( "hF = " + tmp.col(j).dump() );
+            for (int i = 0; i < this.nCls; i++) {
+                File file = new File(root, "pornData/dtIn/cls_" + this.idObj + String.valueOf(i + 1) + ".xml");
+                tmp = readXml2Mat(file.getAbsolutePath());
+                for (int j = 0; j < tmp.cols(); j++) {
                     Core.subtract(tmp.col(j), fDQ, d);
-                    sc=Core.norm(d);
-                    tS=new myScore();
-                    tS.sc=sc;
-                    tS.ID=ID.get(i);
+                    double sc = Core.norm(d);
+                    myScore tS = new myScore();
+                    tS.sc = sc;
+                    tS.ID = (String) this.ID.get(i);
                     tSc.add(tS);
                 }
                 tmp.release();
@@ -337,6 +255,4 @@ public class dLDADis {
         }
         return tSc;
     }
-
-
 }

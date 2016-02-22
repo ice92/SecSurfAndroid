@@ -1,14 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.ftunram.secsurf.toolkit;
 
-/**
- *
- * @author I
- */
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -16,54 +7,55 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
- 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
- 
-/**
- * A utility class that encrypts or decrypts a file.
- * @author www.codejava.net
- *
- */
+
 public class CryptoUtils {
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES";
- 
-    public static void encrypt(String key, File inputFile, File outputFile)
-            throws CryptoException {
-        doCrypto(Cipher.ENCRYPT_MODE, key, inputFile, outputFile);
+
+    public static void encrypt(String key, File inputFile, File outputFile) throws CryptoException {
+        doCrypto(1, key, inputFile, outputFile);
     }
- 
-    public static void decrypt(String key, File inputFile, File outputFile)
-            throws CryptoException {
-        doCrypto(Cipher.DECRYPT_MODE, key, inputFile, outputFile);
+
+    public static void decrypt(String key, File inputFile, File outputFile) throws CryptoException {
+        doCrypto(2, key, inputFile, outputFile);
     }
- 
-    private static void doCrypto(int cipherMode, String key, File inputFile,
-            File outputFile) throws CryptoException {
+
+    private static void doCrypto(int cipherMode, String key, File inputFile, File outputFile) throws CryptoException {
+        Exception ex;
         try {
-            Key secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
+            Key secretKey = new SecretKeySpec(key.getBytes(), TRANSFORMATION);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(cipherMode, secretKey);
-             
             FileInputStream inputStream = new FileInputStream(inputFile);
-            byte[] inputBytes = new byte[(int) inputFile.length()];
+            byte[] inputBytes = new byte[((int) inputFile.length())];
             inputStream.read(inputBytes);
-             
             byte[] outputBytes = cipher.doFinal(inputBytes);
-             
             FileOutputStream outputStream = new FileOutputStream(outputFile);
             outputStream.write(outputBytes);
-             
             inputStream.close();
             outputStream.close();
-             
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException
-                | InvalidKeyException | BadPaddingException
-                | IllegalBlockSizeException | IOException ex) {
+        } catch (NoSuchPaddingException e) {
+            ex = e;
+            throw new CryptoException("Error encrypting/decrypting file", ex);
+        } catch (NoSuchAlgorithmException e2) {
+            ex = e2;
+            throw new CryptoException("Error encrypting/decrypting file", ex);
+        } catch (InvalidKeyException e3) {
+            ex = e3;
+            throw new CryptoException("Error encrypting/decrypting file", ex);
+        } catch (BadPaddingException e4) {
+            ex = e4;
+            throw new CryptoException("Error encrypting/decrypting file", ex);
+        } catch (IllegalBlockSizeException e5) {
+            ex = e5;
+            throw new CryptoException("Error encrypting/decrypting file", ex);
+        } catch (IOException e6) {
+            ex = e6;
             throw new CryptoException("Error encrypting/decrypting file", ex);
         }
     }

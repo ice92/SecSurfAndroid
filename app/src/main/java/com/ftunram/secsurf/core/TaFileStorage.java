@@ -1,252 +1,223 @@
 package com.ftunram.secsurf.core;
 
-import org.opencv.core.CvType;
+import android.support.v4.os.EnvironmentCompat;
+import java.io.File;
+import java.util.Scanner;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.opencv.core.Mat;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
-import java.util.Scanner;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-/**
- * Created by user on 1/12/2016.
- */
 public class TaFileStorage {
-    // static
     public static final int READ = 0;
     public static final int WRITE = 1;
-
-    // varaible
+    private Document doc;
     private File file;
     private boolean isWrite;
-    private Document doc;
     private Element rootElement;
 
     public TaFileStorage() {
-        file = null;
-        isWrite = false;
-        doc = null;
-        rootElement = null;
+        this.file = null;
+        this.isWrite = false;
+        this.doc = null;
+        this.rootElement = null;
     }
 
-
-    // read or write
     public void open(String filePath, int flags) {
-        try {
-            if (flags == READ) {
+        if (flags == 0) {
+            try {
                 open(filePath);
-            } else {
-                create(filePath);
+                return;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
+        create(filePath);
     }
 
-
-    // read only
     public void open(String filePath) {
         try {
-            file = new File(filePath);
-            if (file == null || file.isFile() == false) {
+            this.file = new File(filePath);
+            if (this.file == null || !this.file.isFile()) {
                 System.err.println("Can not open file: " + filePath);
-            } else {
-                isWrite = false;
-                doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
-                doc.getDocumentElement().normalize();
+                return;
             }
+            this.isWrite = false;
+            this.doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(this.file);
+            this.doc.getDocumentElement().normalize();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    // write only
     public void create(String filePath) {
         try {
-            file = new File(filePath);
-            if (file == null) {
+            this.file = new File(filePath);
+            if (this.file == null) {
                 System.err.println("Can not wrtie file: " + filePath);
-            } else {
-                isWrite = true;
-                doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-
-                rootElement = doc.createElement("opencv_storage");
-                doc.appendChild(rootElement);
+                return;
             }
+            this.isWrite = true;
+            this.doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            this.rootElement = this.doc.createElement("opencv_storage");
+            this.doc.appendChild(this.rootElement);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public Mat readMat(String tag) {
-        if (isWrite) {
+        if (this.isWrite) {
             System.err.println("Try read from file with write flags");
             return null;
         }
-
-        NodeList nodelist = doc.getElementsByTagName(tag);
+        NodeList nodelist = this.doc.getElementsByTagName(tag);
         Mat readMat = null;
-
-        for (int i = 0; i < nodelist.getLength(); i++) {
+        for (int i = READ; i < nodelist.getLength(); i += WRITE) {
             Node node = nodelist.item(i);
-
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
+            if (node.getNodeType() == WRITE) {
                 Element element = (Element) node;
-
-                String type_id = element.getAttribute("type_id");
-                if ("opencv-matrix".equals(type_id) == false) {
+                if (!"opencv-matrix".equals(element.getAttribute("type_id"))) {
                     System.out.println("Fault type_id ");
                 }
-
-                String rowsStr = element.getElementsByTagName("rows").item(0).getTextContent();
-                String colsStr = element.getElementsByTagName("cols").item(0).getTextContent();
-                String dtStr = element.getElementsByTagName("dt").item(0).getTextContent();
-                String dataStr = element.getElementsByTagName("data").item(0).getTextContent();
-
+                String rowsStr = element.getElementsByTagName("rows").item(READ).getTextContent();
+                String colsStr = element.getElementsByTagName("cols").item(READ).getTextContent();
+                String dtStr = element.getElementsByTagName("dt").item(READ).getTextContent();
+                String dataStr = element.getElementsByTagName("data").item(READ).getTextContent();
                 int rows = Integer.parseInt(rowsStr);
                 int cols = Integer.parseInt(colsStr);
-                int type = CvType.CV_8U;
-
-                Scanner s = new Scanner(dataStr);
-
+                Scanner scanner = new Scanner(dataStr);
+                Mat mat;
+                int r;
+                int c;
                 if ("d".equals(dtStr)) {
-                    type = CvType.CV_64F;
-                    readMat = new Mat(rows, cols, type);
-                    double ds[] = new double[1];
-                    for (int r = 0; r < rows; r++) {
-                        for (int c = 0; c < cols; c++) {
-                            if (s.hasNextDouble()) {
-                                ds[0] = s.nextDouble();
+                    mat = new Mat(rows, cols, 6);
+                    double[] ds = new double[WRITE];
+                    for (r = READ; r < rows; r += WRITE) {
+                        for (c = READ; c < cols; c += WRITE) {
+                            if (scanner.hasNextDouble()) {
+                                ds[READ] = scanner.nextDouble();
                             } else {
-                                ds[0] = 0;
+                                ds[READ] = 0.0d;
                                 System.err.println("Unmatched number of float value at rows=" + r + " cols=" + c);
                             }
-                            readMat.put(r, c, ds);
+                            mat.put(r, c, ds);
                         }
                     }
-                } else if ("f".equals(dtStr)) {
-                    type = CvType.CV_32F;
-                    readMat = new Mat(rows, cols, type);
-                    float fs[] = new float[1];
-                    for (int r = 0; r < rows; r++) {
-                        for (int c = 0; c < cols; c++) {
-                            if (s.hasNextFloat()) {
-                                fs[0] = s.nextFloat();
-                            } else {
-                                fs[0] = 0;
-                                System.err.println("Unmatched number of float value at rows=" + r + " cols=" + c);
+                } else {
+                    if ("f".equals(dtStr)) {
+                        mat = new Mat(rows, cols, 5);
+                        float[] fs = new float[WRITE];
+                        for (r = READ; r < rows; r += WRITE) {
+                            for (c = READ; c < cols; c += WRITE) {
+                                if (scanner.hasNextFloat()) {
+                                    fs[READ] = scanner.nextFloat();
+                                } else {
+                                    fs[READ] = 0.0f;
+                                    System.err.println("Unmatched number of float value at rows=" + r + " cols=" + c);
+                                }
+                                mat.put(r, c, fs);
                             }
-                            readMat.put(r, c, fs);
                         }
-                    }
-                } else if ("i".equals(dtStr)) {
-                    type = CvType.CV_32S;
-                    readMat = new Mat(rows, cols, type);
-                    int is[] = new int[1];
-                    for (int r = 0; r < rows; r++) {
-                        for (int c = 0; c < cols; c++) {
-                            if (s.hasNextInt()) {
-                                is[0] = s.nextInt();
-                            } else {
-                                is[0] = 0;
-                                System.err.println("Unmatched number of int value at rows=" + r + " cols=" + c);
+                    } else {
+                        if ("i".equals(dtStr)) {
+                            mat = new Mat(rows, cols, 4);
+                            int[] is = new int[WRITE];
+                            for (r = READ; r < rows; r += WRITE) {
+                                for (c = READ; c < cols; c += WRITE) {
+                                    if (scanner.hasNextInt()) {
+                                        is[READ] = scanner.nextInt();
+                                    } else {
+                                        is[READ] = READ;
+                                        System.err.println("Unmatched number of int value at rows=" + r + " cols=" + c);
+                                    }
+                                    mat.put(r, c, is);
+                                }
                             }
-                            readMat.put(r, c, is);
-                        }
-                    }
-                } else if ("s".equals(dtStr)) {
-                    type = CvType.CV_16S;
-                    readMat = new Mat(rows, cols, type);
-                    short ss[] = new short[1];
-                    for (int r = 0; r < rows; r++) {
-                        for (int c = 0; c < cols; c++) {
-                            if (s.hasNextShort()) {
-                                ss[0] = s.nextShort();
+                        } else {
+                            if ("s".equals(dtStr)) {
+                                mat = new Mat(rows, cols, 3);
+                                short[] ss = new short[WRITE];
+                                for (r = READ; r < rows; r += WRITE) {
+                                    for (c = READ; c < cols; c += WRITE) {
+                                        if (scanner.hasNextShort()) {
+                                            ss[READ] = scanner.nextShort();
+                                        } else {
+                                            ss[READ] = (short) 0;
+                                            System.err.println("Unmatched number of int value at rows=" + r + " cols=" + c);
+                                        }
+                                        mat.put(r, c, ss);
+                                    }
+                                }
                             } else {
-                                ss[0] = 0;
-                                System.err.println("Unmatched number of int value at rows=" + r + " cols=" + c);
+                                if ("b".equals(dtStr)) {
+                                    mat = new Mat(rows, cols, READ);
+                                    byte[] bs = new byte[WRITE];
+                                    for (r = READ; r < rows; r += WRITE) {
+                                        for (c = READ; c < cols; c += WRITE) {
+                                            if (scanner.hasNextByte()) {
+                                                bs[READ] = scanner.nextByte();
+                                            } else {
+                                                bs[READ] = (byte) 0;
+                                                System.err.println("Unmatched number of byte value at rows=" + r + " cols=" + c);
+                                            }
+                                            mat.put(r, c, bs);
+                                        }
+                                    }
+                                }
                             }
-                            readMat.put(r, c, ss);
-                        }
-                    }
-                } else if ("b".equals(dtStr)) {
-                    readMat = new Mat(rows, cols, type);
-                    byte bs[] = new byte[1];
-                    for (int r = 0; r < rows; r++) {
-                        for (int c = 0; c < cols; c++) {
-                            if (s.hasNextByte()) {
-                                bs[0] = s.nextByte();
-                            } else {
-                                bs[0] = 0;
-                                System.err.println("Unmatched number of byte value at rows=" + r + " cols=" + c);
-                            }
-                            readMat.put(r, c, bs);
                         }
                     }
                 }
-                s.close();
+                scanner.close();
             }
         }
         return readMat;
     }
 
-
     public void writeMat(String tag, Mat mat) {
         try {
-            if (isWrite == false) {
-                System.err.println("Try write to file with no write flags");
+            if (this.isWrite) {
+                String dtStr;
+                Element matrix = this.doc.createElement(tag);
+                matrix.setAttribute("type_id", "opencv-matrix");
+                this.rootElement.appendChild(matrix);
+                Element rows = this.doc.createElement("rows");
+                rows.appendChild(this.doc.createTextNode(String.valueOf(mat.rows())));
+                Element cols = this.doc.createElement("cols");
+                cols.appendChild(this.doc.createTextNode(String.valueOf(mat.cols())));
+                Element dt = this.doc.createElement("dt");
+                int type = mat.type();
+                if (type == 6) {
+                    dtStr = "d";
+                } else if (type == 5) {
+                    dtStr = "f";
+                } else if (type == 4) {
+                    dtStr = "i";
+                } else if (type == 3) {
+                    dtStr = "s";
+                } else if (type == 0) {
+                    dtStr = "b";
+                } else {
+                    dtStr = EnvironmentCompat.MEDIA_UNKNOWN;
+                }
+                dt.appendChild(this.doc.createTextNode(dtStr));
+                Element data = this.doc.createElement("data");
+                data.appendChild(this.doc.createTextNode(dataStringBuilder(mat)));
+                matrix.appendChild(rows);
+                matrix.appendChild(cols);
+                matrix.appendChild(dt);
+                matrix.appendChild(data);
                 return;
             }
-
-            Element matrix = doc.createElement(tag);
-            matrix.setAttribute("type_id", "opencv-matrix");
-            rootElement.appendChild(matrix);
-
-            Element rows = doc.createElement("rows");
-            rows.appendChild(doc.createTextNode(String.valueOf(mat.rows())));
-
-            Element cols = doc.createElement("cols");
-            cols.appendChild(doc.createTextNode(String.valueOf(mat.cols())));
-
-            Element dt = doc.createElement("dt");
-            String dtStr;
-            int type = mat.type();
-            if (type == CvType.CV_64F) { // type == CvType.CV_64FC1
-                dtStr = "d";
-            } else if (type == CvType.CV_32F) { // type == CvType.CV_32FC1
-                dtStr = "f";
-            } else if (type == CvType.CV_32S) { // type == CvType.CV_32SC1
-                dtStr = "i";
-            } else if (type == CvType.CV_16S) { // type == CvType.CV_16SC1
-                dtStr = "s";
-            } else if (type == CvType.CV_8U) { // type == CvType.CV_8UC1
-                dtStr = "b";
-            } else {
-                dtStr = "unknown";
-            }
-            dt.appendChild(doc.createTextNode(dtStr));
-
-            Element data = doc.createElement("data");
-            String dataStr = dataStringBuilder(mat);
-            data.appendChild(doc.createTextNode(dataStr));
-
-            // append all to matrix
-            matrix.appendChild(rows);
-            matrix.appendChild(cols);
-            matrix.appendChild(dt);
-            matrix.appendChild(data);
-
+            System.err.println("Try write to file with no write flags");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -257,53 +228,54 @@ public class TaFileStorage {
         int rows = mat.rows();
         int cols = mat.cols();
         int type = mat.type();
-
-        if (type == CvType.CV_64F) {
-            double ds[] = new double[1];
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
+        int r;
+        int c;
+        if (type == 6) {
+            double[] ds = new double[WRITE];
+            for (r = READ; r < rows; r += WRITE) {
+                for (c = READ; c < cols; c += WRITE) {
                     mat.get(r, c, ds);
-                    sb.append(String.valueOf(ds[0]));
+                    sb.append(String.valueOf(ds[READ]));
                     sb.append(' ');
                 }
                 sb.append('\n');
             }
-        } else if (type == CvType.CV_32F) {
-            float fs[] = new float[1];
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
+        } else if (type == 5) {
+            float[] fs = new float[WRITE];
+            for (r = READ; r < rows; r += WRITE) {
+                for (c = READ; c < cols; c += WRITE) {
                     mat.get(r, c, fs);
-                    sb.append(String.valueOf(fs[0]));
+                    sb.append(String.valueOf(fs[READ]));
                     sb.append(' ');
                 }
                 sb.append('\n');
             }
-        } else if (type == CvType.CV_32S) {
-            int is[] = new int[1];
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
+        } else if (type == 4) {
+            int[] is = new int[WRITE];
+            for (r = READ; r < rows; r += WRITE) {
+                for (c = READ; c < cols; c += WRITE) {
                     mat.get(r, c, is);
-                    sb.append(String.valueOf(is[0]));
+                    sb.append(String.valueOf(is[READ]));
                     sb.append(' ');
                 }
                 sb.append('\n');
             }
-        } else if (type == CvType.CV_16S) {
-            short ss[] = new short[1];
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
+        } else if (type == 3) {
+            short[] ss = new short[WRITE];
+            for (r = READ; r < rows; r += WRITE) {
+                for (c = READ; c < cols; c += WRITE) {
                     mat.get(r, c, ss);
-                    sb.append(String.valueOf(ss[0]));
+                    sb.append(String.valueOf(ss[READ]));
                     sb.append(' ');
                 }
                 sb.append('\n');
             }
-        } else if (type == CvType.CV_8U) {
-            byte bs[] = new byte[1];
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
+        } else if (type == 0) {
+            byte[] bs = new byte[WRITE];
+            for (r = READ; r < rows; r += WRITE) {
+                for (c = READ; c < cols; c += WRITE) {
                     mat.get(r, c, bs);
-                    sb.append(String.valueOf(bs[0]));
+                    sb.append(String.valueOf(bs[READ]));
                     sb.append(' ');
                 }
                 sb.append('\n');
@@ -311,28 +283,20 @@ public class TaFileStorage {
         } else {
             sb.append("unknown type\n");
         }
-
         return sb.toString();
     }
 
-
     public void release() {
         try {
-            if (isWrite == false) {
-                System.err.println("Try release of file with no write flags");
+            if (this.isWrite) {
+                DOMSource source = new DOMSource(this.doc);
+                StreamResult result = new StreamResult(this.file);
+                Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                transformer.setOutputProperty("indent", "yes");
+                transformer.transform(source, result);
                 return;
             }
-
-            DOMSource source = new DOMSource(doc);
-
-            StreamResult result = new StreamResult(file);
-
-            // write to xml file
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-            // do it
-            transformer.transform(source, result);
+            System.err.println("Try release of file with no write flags");
         } catch (Exception e) {
             e.printStackTrace();
         }

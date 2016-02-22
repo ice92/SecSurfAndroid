@@ -1,106 +1,82 @@
-package com.ls.activities; // 41 Post - Created by DimasTheDriver on Jan/14/2012 . Part of the 'Android: how to create a loading screen � Part 1' post. Available at: http://www.41post.com/?p=4588
+package com.ls.activities;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import com.ls.directoryselectordemo.R;
 
-public class LoadingScreenActivity extends Activity 
-{
-	//A ProgressDialog object
-	private ProgressDialog progressDialog;
-	
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) 
-    {
-    	super.onCreate(savedInstanceState);
-    	
-    	//Initialize a LoadViewTask object and call the execute() method
-    	new LoadViewTask().execute();    	
-    	
+public class LoadingScreenActivity extends Activity {
+    private ProgressDialog progressDialog;
+
+    private class LoadViewTask extends AsyncTask<Void, Integer, Void> {
+        private LoadViewTask() {
+        }
+
+        protected void onPreExecute() {
+            LoadingScreenActivity.this.progressDialog = new ProgressDialog(LoadingScreenActivity.this);
+            LoadingScreenActivity.this.progressDialog.setProgressStyle(1);
+            LoadingScreenActivity.this.progressDialog.setTitle("Scanning...");
+            LoadingScreenActivity.this.progressDialog.setMessage("Scanning porn file on folder, please wait...");
+            LoadingScreenActivity.this.progressDialog.setCancelable(false);
+            LoadingScreenActivity.this.progressDialog.setIndeterminate(false);
+            LoadingScreenActivity.this.progressDialog.setMax(100);
+            LoadingScreenActivity.this.progressDialog.setProgress(0);
+            LoadingScreenActivity.this.progressDialog.show();
+        }
+
+        /* JADX WARNING: inconsistent code. */
+        /* Code decompiled incorrectly, please refer to instructions dump. */
+        protected java.lang.Void doInBackground(java.lang.Void... r6) {
+            /*
+            r5 = this;
+            monitor-enter(r5);	 Catch:{ InterruptedException -> 0x001f }
+            r0 = 0;
+        L_0x0002:
+            r2 = 4;
+            if (r0 > r2) goto L_0x0025;
+        L_0x0005:
+            r2 = 1300; // 0x514 float:1.822E-42 double:6.423E-321;
+            r5.wait(r2);	 Catch:{ all -> 0x001c }
+            r0 = r0 + 1;
+            r2 = 1;
+            r2 = new java.lang.Integer[r2];	 Catch:{ all -> 0x001c }
+            r3 = 0;
+            r4 = r0 * 25;
+            r4 = java.lang.Integer.valueOf(r4);	 Catch:{ all -> 0x001c }
+            r2[r3] = r4;	 Catch:{ all -> 0x001c }
+            r5.publishProgress(r2);	 Catch:{ all -> 0x001c }
+            goto L_0x0002;
+        L_0x001c:
+            r2 = move-exception;
+            monitor-exit(r5);	 Catch:{ all -> 0x001c }
+            throw r2;	 Catch:{ InterruptedException -> 0x001f }
+        L_0x001f:
+            r1 = move-exception;
+            r1.printStackTrace();
+        L_0x0023:
+            r2 = 0;
+            return r2;
+        L_0x0025:
+            monitor-exit(r5);	 Catch:{ all -> 0x001c }
+            goto L_0x0023;
+            */
+            throw new UnsupportedOperationException("Method not decompiled: com.ls.activities.LoadingScreenActivity.LoadViewTask.doInBackground(java.lang.Void[]):java.lang.Void");
+        }
+
+        protected void onProgressUpdate(Integer... values) {
+            LoadingScreenActivity.this.progressDialog.setProgress(values[0].intValue());
+        }
+
+        protected void onPostExecute(Void result) {
+            LoadingScreenActivity.this.progressDialog.dismiss();
+            LoadingScreenActivity.this.setContentView(R.layout.main);
+            LoadingScreenActivity.this.finish();
+        }
     }
-    
-    //To use the AsyncTask, it must be subclassed
-    private class LoadViewTask extends AsyncTask<Void, Integer, Void>
-    {
-    	//Before running code in the separate thread
-		@Override
-		protected void onPreExecute() 
-		{
-			//Create a new progress dialog
-			progressDialog = new ProgressDialog(LoadingScreenActivity.this);
-			//Set the progress dialog to display a horizontal progress bar 
-			progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			//Set the dialog title to 'Loading...'
-			progressDialog.setTitle("Scanning...");
-			//Set the dialog message to 'Loading application View, please wait...'
-			progressDialog.setMessage("Scanning porn file on folder, please wait...");
-			//This dialog can't be canceled by pressing the back key
-			progressDialog.setCancelable(false);
-			//This dialog isn't indeterminate
-			progressDialog.setIndeterminate(false);
-			//The maximum number of items is 100
-			progressDialog.setMax(100);
-			//Set the current progress to zero
-			progressDialog.setProgress(0);
-			//Display the progress dialog
-			progressDialog.show();
-		}
-		
-		//The code to be executed in a background thread.
-		@Override
-		protected Void doInBackground(Void... params) 
-		{
-			/* This is just a code that delays the thread execution 4 times, 
-			 * during 850 milliseconds and updates the current progress. This 
-			 * is where the code that is going to be executed on a background
-			 * thread must be placed. 
-			 */
-			try 
-			{
-				//Get the current thread's token
-				synchronized (this) 
-				{
-					//Initialize an integer (that will act as a counter) to zero
-					int counter = 0;
-					//While the counter is smaller than four
-					while(counter <= 4)
-					{
-						//Wait 850 milliseconds
-						this.wait(1300);
-						//Increment the counter 
-						counter++;
-						//Set the current progress. 
-						//This value is going to be passed to the onProgressUpdate() method.
-						publishProgress(counter*25);
-					}
-				}
-			} 
-			catch (InterruptedException e) 
-			{
-				e.printStackTrace();
-			}
-			return null;
-		}
 
-		//Update the progress
-		@Override
-		protected void onProgressUpdate(Integer... values) 
-		{
-			//set the current progress of the progress dialog
-			progressDialog.setProgress(values[0]);
-		}
-
-		//after executing the code in the thread
-		@Override
-		protected void onPostExecute(Void result) 
-		{
-			//close the progress dialog
-			progressDialog.dismiss();
-			//initialize the View
-			setContentView(R.layout.main);
-			finish();
-		} 	
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        new LoadViewTask().execute(new Void[0]);
     }
 }

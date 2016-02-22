@@ -1,95 +1,10 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/darkblue"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                android:paddingBottom="@dimen/activity_vertical_margin"
-                tools:context=".MainActivity">
-
-    <TextView
-            android:id="@+id/txt_dir_location_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:text="@string/dir_location"
-        android:layout_below="@+id/btn_change_dir"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-                    android:id="@+id/txt_dir_location"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-        android:singleLine="true"
-        android:text="test"
-        android:layout_alignTop="@+id/txt_dir_location_label"
-        android:layout_toRightOf="@+id/txt_dir_location_label"
-        android:layout_toEndOf="@+id/txt_dir_location_label" />
-
-    <Button
-        android:layout_margin="10dp"
-        android:elevation="7dp"
-            android:id="@+id/btn_change_dir"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-        android:text="@string/change_dir"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:background="@xml/buttonc"
-        />
-
-    <Button
-        android:layout_margin="10dp"
-        android:elevation="7dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Scan"
-        android:id="@+id/button"
-        android:onClick="scanClick"
-        android:layout_alignTop="@+id/button2"
-        android:layout_alignParentLeft="true"
-        android:background="@xml/buttonc"
-        android:layout_alignParentStart="true" />
-
-    <ListView
-        android:elevation="7dp"
-        android:layout_margin="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@android:id/list"
-        android:layout_below="@+id/button"
-        android:background="@color/darkpurple"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true" />
-
-    <Button
-        android:elevation="7dp"
-        android:background="@xml/buttonc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:text="Delete"
-        android:layout_margin="10dp"
-        android:id="@+id/button2"
-        android:layout_below="@+id/txt_dir_location"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:onClick="delClick"/>
-
-    <Button
-        android:background="@xml/buttonc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Clear"
-        android:enabled="false"
-        android:id="@+id/button3"
-        android:onClick="clrClick"
-        android:layout_above="@android:id/list"
-        android:layout_toRightOf="@+id/button"
-        android:layout_toEndOf="@+id/button" />
-
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@color/darkblue" android:paddingLeft="@dimen/activity_horizontal_margin" android:paddingTop="@dimen/activity_vertical_margin" android:paddingRight="@dimen/activity_horizontal_margin" android:paddingBottom="@dimen/activity_vertical_margin" android:layout_width="-1" android:layout_height="-1">
+    <TextView android:id="@id/txt_dir_location_label" android:layout_width="-2" android:layout_height="-2" android:text="@string/dir_location" android:singleLine="true" android:layout_below="@id/btn_change_dir" android:layout_alignParentLeft="true" android:layout_alignParentStart="true" />
+    <TextView android:id="@id/txt_dir_location" android:layout_width="-2" android:layout_height="-2" android:text="test" android:singleLine="true" android:layout_toRightOf="@id/txt_dir_location_label" android:layout_alignTop="@id/txt_dir_location_label" android:layout_toEndOf="@id/txt_dir_location_label" />
+    <Button android:id="@id/btn_change_dir" android:background="@xml/buttonc" android:layout_width="-2" android:layout_height="-2" android:layout_margin="10dp" android:text="@string/change_dir" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" />
+    <Button android:id="@id/button" android:background="@xml/buttonc" android:layout_width="-2" android:layout_height="-2" android:layout_margin="10dp" android:text="Scan" android:layout_alignTop="@id/button2" android:layout_alignParentLeft="true" android:onClick="scanClick" android:layout_alignParentStart="true" />
+    <ListView android:id="0x102000a" android:background="@color/darkpurple" android:layout_width="-2" android:layout_height="-2" android:layout_margin="10dp" android:layout_below="@id/button" android:layout_alignParentLeft="true" android:layout_alignParentBottom="true" android:layout_alignParentStart="true" />
+    <Button android:enabled="false" android:id="@id/button2" android:background="@xml/buttonc" android:layout_width="-2" android:layout_height="-2" android:layout_margin="10dp" android:text="Delete" android:layout_below="@id/txt_dir_location" android:layout_alignParentRight="true" android:onClick="delClick" android:layout_alignParentEnd="true" />
+    <Button android:enabled="false" android:id="@id/button3" android:background="@xml/buttonc" android:layout_width="-2" android:layout_height="-2" android:text="Clear" android:layout_toRightOf="@id/button" android:layout_above="0x102000a" android:onClick="clrClick" android:layout_toEndOf="@id/button" />
 </RelativeLayout>
